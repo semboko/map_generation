@@ -44,7 +44,7 @@ while True:
         except StopIteration:
             map.is_loaded = True
             map.draw_map()
-    else:
+    else: 
         game_surface.blit(map.map_img, (0, 0))
         player.update_position()
         player.draw(game_surface, map.offset_tiles)
