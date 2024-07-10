@@ -25,6 +25,7 @@ game_surface = pygame.Surface(map.map_img.get_size())
 robe_hood = InventoryItem("assets/character/walkcycle/HEAD_robe_hood.png")
 inventory = PlayerInventory()
 inventory.common_slots[2][2] = robe_hood
+inventory.common_slots[2][4] = robe_hood
 
 while True:
     for event in pygame.event.get():
