@@ -23,12 +23,15 @@ class InventoryItem:
 class PlayerInventory:
     def __init__(self) -> None:
         self.common_slots: List[List[InventoryItem | None]] = [[None] * 6 for _ in range(6)]
-        self.tools: List[InventoryItem | None] = [None] * 6
-        self.clothes: List[InventoryItem | None] = [None] * 6
+        self.tools: List[List[InventoryItem | None]] = [[None] * 6]
+        self.clothes: List[List[InventoryItem | None]] = [[None] * 6]
         self.shown = False
 
         self.moving_item: Optional[tuple[int, int]] = None
         self.mouse_position = None
+
+        self.all_slots = [self.common_slots, self.tools, self.clothes]
+        self.slot_rects = [pygame.Rect(0, 0, 0, 0)] * 3
 
         self.common_slots_rect: pygame.Rect = pygame.Rect(0, 0, 0, 0)
 
@@ -37,10 +40,11 @@ class PlayerInventory:
             if self.common_slots_rect.collidepoint(event.pos):
                 i = (event.pos[1] - self.common_slots_rect.top) // 64
                 j = (event.pos[0] - self.common_slots_rect.left) // 64
-                self.moving_item = i, j
+                if self.common_slots[i][j] is not None:
+                    self.moving_item = i, j
 
         if event.type == pygame.MOUSEBUTTONUP:
-            if self.moving_item is not None or self.mouse_position is not None:
+            if self.moving_item is not None and self.mouse_position is not None:
                 mi, mj = self.moving_item
                 if self.common_slots_rect.collidepoint(event.pos):
                     i = (event.pos[1] - self.common_slots_rect.top) // 64
@@ -56,9 +60,9 @@ class PlayerInventory:
         surface_width = len(slots[0]) * 64
         surface_height = len(slots) * 64
         result = pygame.Surface((surface_width, surface_height))
-        for i in range(len(self.common_slots)):
-            for j in range(len(self.common_slots[i])):
-                item = self.common_slots[i][j]
+        for i in range(len(slots)):
+            for j in range(len(slots[i])):
+                item = slots[i][j]
                 item_surface = empty_slot()
                 if item is not None:
                     item.display_icon(item_surface, (0, 0))
@@ -75,19 +79,24 @@ class PlayerInventory:
         bg_surface.convert_alpha()
         bg_surface.fill((0, 0, 0, 200))
 
-        common_slots_img = self.render_slots(self.common_slots)
-        common_slots_dest = common_slots_img.get_rect(
-            center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2)
-        )
-        self.common_slots_rect = bg_surface.blit(
-            common_slots_img, common_slots_dest
-        )
+        for slots_group in self.all_slots:
+            slots_group_img = self.render_slots(slots_group)
+            # TODO: Calculate dest_rect for the group, !update self.slot_rects
+            # TODO: Blit the image in the dest
 
-        tools_img = self.render_slots([self.tools])
-        tools_dest = tools_img.get_rect(
-            left=common_slots_dest.left, top=common_slots_dest.bottom + 10
-        )
-        _ = bg_surface.blit(tools_img, tools_dest)
+        # common_slots_img = self.render_slots(self.common_slots)
+        # common_slots_dest = common_slots_img.get_rect(
+        #     center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2)
+        # )
+        # self.common_slots_rect = bg_surface.blit(
+        #     common_slots_img, common_slots_dest
+        # )
+
+        # tools_img = self.render_slots([self.tools])
+        # tools_dest = tools_img.get_rect(
+        #     left=common_slots_dest.left, top=common_slots_dest.bottom + 10
+        # )
+        # _ = bg_surface.blit(tools_img, tools_dest)
 
         if self.moving_item is not None and self.mouse_position is not None:
             icon_surface = pygame.Surface((64, 64))
