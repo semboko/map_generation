@@ -3,6 +3,7 @@ from typing import List, Tuple
 from map_objects import Tile
 from math import dist
 from itertools import pairwise
+from inventory import PlayerInventory
 
 
 class Player:
@@ -15,6 +16,7 @@ class Player:
         self.route: List[Tuple[int, int]] = []
         self.animation_counter = 0
         self.animation_frame = 10
+        self.inventory = PlayerInventory()
 
     def set_target(
         self, target: pygame.Vector2, game_map: List[List[Tile]]
@@ -110,5 +112,13 @@ class Player:
 
         player_pos = (self.pos - map_offset) * 32
         surface.blit(img, player_pos)
+
+        for line in self.inventory.clothes:
+            for slot in line:
+                if slot.item is None:
+                    continue
+                img = slot.item.img.subsurface(crop_rect)
+                img = pygame.transform.scale(img, (32, 32))
+                surface.blit(img, player_pos)
 
         self.draw_line(surface, map_offset)

@@ -3,7 +3,8 @@ from map_objects import Map
 from progress_bar import ProgresBar
 from player import Player
 import constants
-from inventory import InventoryItem, PlayerInventory
+from random import choice
+from inventory import InventoryItem, PlayerInventory, walkcycle, InventorySlot
 
 
 pygame.init()
@@ -22,28 +23,29 @@ pbar = ProgresBar((50, 500), (600, 50))
 
 game_surface = pygame.Surface(map.map_img.get_size())
 
-robe_hood = InventoryItem("assets/character/walkcycle/HEAD_robe_hood.png")
-inventory = PlayerInventory()
-inventory.common_slots[2][2] = robe_hood
-inventory.common_slots[2][4] = robe_hood
+for i in range(4):
+    slot = InventorySlot()
+    slot.item = choice(walkcycle)
+    slot.count = 1
+    player.inventory.common_slots[i][0] = slot
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
-        if inventory.shown:
-            inventory.handle_event(event)
-        if event.type == pygame.MOUSEBUTTONDOWN and map.is_loaded and not inventory.shown:
+        if player.inventory.shown:
+            player.inventory.handle_event(event)
+        if event.type == pygame.MOUSEBUTTONDOWN and map.is_loaded and not player.inventory.shown:
             if event.button == pygame.BUTTON_LEFT:
                 map_col = round((-map.offset_px.x + event.pos[0])//32 + map.offset_tiles.x)
                 map_row = round((-map.offset_px.y + event.pos[1])//32 + map.offset_tiles.y)
                 player.set_target(pygame.Vector2(map_col, map_row), map.map)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_e:
-                inventory.shown = not inventory.shown
+                player.inventory.shown = not player.inventory.shown
 
     pressed = pygame.key.get_pressed()
-    if not inventory.shown:
+    if not player.inventory.shown:
         map.handle_pressed(pressed)
 
     window.fill((0, 0, 0))
@@ -64,7 +66,7 @@ while True:
         window.blit(game_surface, map.offset_px)
         minimap = map.get_minimap()
         window.blit(minimap, (0, 0))
-        inventory.display(window)
+        player.inventory.display(window)
 
     pygame.display.update()
     clock.tick(60)
